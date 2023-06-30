@@ -441,7 +441,7 @@ public class User implements UserDetails, CredentialsContainer {
 		 */
 		public UserBuilder authorities(Collection<? extends GrantedAuthority> authorities) {
 			Assert.notNull(authorities, "authorities cannot be null");
-			this.authorities.addAll(authorities);
+			this.authorities = new ArrayList<>(authorities);
 			return this;
 		}
 

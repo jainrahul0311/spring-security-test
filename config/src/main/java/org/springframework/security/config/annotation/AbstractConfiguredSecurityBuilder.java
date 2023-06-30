@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2013 the original author or authors.
+ * Copyright 2002-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.DelegatingFilterProxy;
@@ -140,6 +141,23 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	}
 
 	/**
+	 * Applies a {@link SecurityConfigurerAdapter} to this {@link SecurityBuilder} and
+	 * invokes {@link SecurityConfigurerAdapter#setBuilder(SecurityBuilder)}.
+	 * @param configurer
+	 * @return the {@link SecurityBuilder} for further customizations
+	 * @throws Exception
+	 * @since 6.2
+	 */
+	@SuppressWarnings("unchecked")
+	public <C extends SecurityConfigurerAdapter<O, B>> B with(C configurer, Customizer<C> customizer) throws Exception {
+		configurer.addObjectPostProcessor(this.objectPostProcessor);
+		configurer.setBuilder((B) this);
+		add(configurer);
+		customizer.customize(configurer);
+		return (B) this;
+	}
+
+	/**
 	 * Sets an object that is shared by multiple {@link SecurityConfigurer}.
 	 * @param sharedType the Class to key the shared object by.
 	 * @param object the Object to store
@@ -221,6 +239,7 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 		if (configs == null) {
 			return new ArrayList<>();
 		}
+		removeFromConfigurersAddedInInitializing(clazz);
 		return new ArrayList<>(configs);
 	}
 
@@ -253,9 +272,14 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 		if (configs == null) {
 			return null;
 		}
+		removeFromConfigurersAddedInInitializing(clazz);
 		Assert.state(configs.size() == 1,
 				() -> "Only one configurer expected for type " + clazz + ", but got " + configs);
 		return (C) configs.get(0);
+	}
+
+	private <C extends SecurityConfigurer<O, B>> void removeFromConfigurersAddedInInitializing(Class<C> clazz) {
+		this.configurersAddedInInitializing.removeIf(clazz::isInstance);
 	}
 
 	/**
