@@ -2,7 +2,8 @@ name: Imaging Cloud Action Test
 on:
   push:
     branches:
-      -  ${{github.event.repository.default_branch}}
+      - main
+      - master
   workflow_dispatch:
 jobs:
   run-imaging-cloud-cli:
