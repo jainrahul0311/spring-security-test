@@ -24,4 +24,4 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Imaging Cloud Action Test
-        uses: jainrahul0311/il-cloud-action@v1.3.3
+        uses: jainrahul0311/il-cloud-action@v1.3.4
